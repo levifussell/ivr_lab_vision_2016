@@ -1,0 +1,173 @@
+% unix('mplayer tv:// -tv driver=v4l2:width=140:height=140:device=/dev/video1 -frames 1 -vo jpeg');
+
+I = imread('06.jpg');
+
+Id = double(I) / 255;
+Id_norm = Id ./ repmat(sum(Id, 3), [1, 1, 3]);
+Ig = sum(I, 3) / 3;
+
+% figure(5)
+% % colormap(gray)
+% imagesc(Id_norm)
+
+% Ig = max_pooling(Ig, 4);
+
+% figure(10)
+% colormap(gray)
+% imagesc(Ig)
+
+% hold on
+
+edges = [0:255];
+[rows, columns] = size(Ig);
+Ig_vec = reshape(Ig, 1, rows .* columns);
+
+I_hist = histc(Ig_vec, edges);
+
+% figure(2)
+% plot(I_hist);
+
+% hold on
+
+filter = gausswin(80, 6);
+filter = filter/sum(filter);
+% figure(3)
+% plot(filter)
+
+smooth_hist = conv(filter, I_hist);
+figure(1)
+plot(smooth_hist)
+
+hold on
+
+% find minimums betweenthresholds
+offset_error = 0;
+a = smooth_hist < ([10, smooth_hist(:, 1:(size(smooth_hist, 2) - 1))] - repmat(offset_error, 1, size(smooth_hist, 2)));
+b = smooth_hist < ([smooth_hist(:, 2:size(smooth_hist, 2)), 10] - repmat(offset_error, 1, size(smooth_hist, 2)));
+hist_maximums = a .* b .* smooth_hist;
+
+plot(hist_maximums, '*', 'markersize', 10)
+
+
+% I_bw = (Ig < 150);
+% figure(2)
+% colormap(gray)
+% imagesc(I_bw)
+
+% create a set of thresholds
+I_thresholds = find(hist_maximums > 0);
+I_num_thresholds = size(I_thresholds, 2);
+threshold_rate = 255 ./ I_num_thresholds;
+Ig_cluster = zeros(size(Ig));
+
+for i=1:I_num_thresholds
+
+    Ig_cluster += (Ig < I_thresholds(:, i)) .* threshold_rate;
+end
+
+figure(3)
+colormap(gray)
+imagesc(Ig_cluster)
+
+figure(4)
+colormap(gray)
+imagesc(Ig)
+
+% filter = [2 0 0; 0 0 0; 0 0 -2];
+% % filter = filter/sum(filter);
+% % figure(3)
+% % plot(filter)
+
+% Ig_cluster_smooth = conv2(filter, Ig_cluster);
+
+% figure(5)
+% colormap(gray)
+% imagesc(Ig_cluster_smooth)
+
+% -----
+% first max_pooling the algorithm does; the lower this value, the more points
+% selected on the object (also the more noise incorporated) 
+% - the downside is that the program will run MUCH slower
+max_pool_v1 = 7; 
+% -----
+% second max_pooling; this value has not been experimented with and staying at
+% 2 doesn't really improve or worsen the algorithm
+max_pool_v2 = 2;
+
+% -----
+% how much the image has been reduced in total
+total_max_pooling_reduction = max_pool_v1 * max_pool_v2;
+
+Ig_pool_3 = max_pooling(Ig_cluster, max_pool_v1);
+
+figure(6)
+colormap(gray)
+imagesc(Ig_pool_3)
+
+% -----
+% after the first max-pooling, the algorithm blurs the image so that there are less
+%  distinct pixels. It then proceeds to half the image again with another max-pooling
+filter = [1 4 7 4 1; 4 16 36 16 4; 7 26 41 26 7; 4 16 26 16 4; 1 4 7 4 1] ./ 273;
+% filter = [16 36 16; 26 41 26; 16 26 16] ./ 273;
+% filter = [0 0 0; 0 1 0; 0 0 0];
+Ig_smooth_4 = conv2(Ig_pool_3, filter);
+
+figure(7)
+colormap(gray)
+imagesc(Ig_smooth_4)
+
+Ig_pool_5 = max_pooling(Ig_smooth_4, max_pool_v2);
+
+figure(8)
+colormap(gray)
+imagesc(Ig_pool_5)
+
+x_v = [1:size(Ig_pool_5, 2)];
+y_v = [1:size(Ig_pool_5, 1)];
+[yy, xx] = meshgrid(x_v, y_v);
+figure(9)
+mesh(xx, yy, Ig_pool_5)
+
+
+% find minimums
+a_x = Ig_pool_5 <= ([ones(size(Ig_pool_5, 1), 1) .* 1000, Ig_pool_5(:, 1:(size(Ig_pool_5, 2) - 1))]);
+b_x = Ig_pool_5 <= ([Ig_pool_5(:, 2:size(Ig_pool_5, 2)), ones(size(Ig_pool_5, 1), 1) .* 1000]);
+a_y = Ig_pool_5 <= ([ones(1, size(Ig_pool_5, 2)) .* 1000; Ig_pool_5(1:(size(Ig_pool_5, 1) - 1), :)]);
+b_y = Ig_pool_5 <= ([Ig_pool_5(2:size(Ig_pool_5, 1), :); ones(1, size(Ig_pool_5, 2)) .* 1000]);
+Ig_min_pool_5 = ceil((a_x .* b_x + a_y .* b_y) / 2) .* Ig_pool_5;
+
+% find maximums
+a_x = Ig_pool_5 >= ([ones(size(Ig_pool_5, 1), 1) .* 1000, Ig_pool_5(:, 1:(size(Ig_pool_5, 2) - 1))]);
+b_x = Ig_pool_5 >= ([Ig_pool_5(:, 2:size(Ig_pool_5, 2)), ones(size(Ig_pool_5, 1), 1) .* 1000]);
+a_y = Ig_pool_5 >= ([ones(1, size(Ig_pool_5, 2)) .* 1000; Ig_pool_5(1:(size(Ig_pool_5, 1) - 1), :)]);
+b_y = Ig_pool_5 >= ([Ig_pool_5(2:size(Ig_pool_5, 1), :); ones(1, size(Ig_pool_5, 2)) .* 1000]);
+Ig_max_pool_5 = a_x .* b_x .* a_y .* b_y .* Ig_pool_5;
+
+figure(10)
+colormap(gray)
+imagesc(Ig_min_pool_5)
+
+figure(11)
+colormap(gray)
+imagesc(Ig_max_pool_5)
+
+% re-expand the matrix
+Ig_min_pool_5_expand = kron(Ig_min_pool_5, ones(total_max_pooling_reduction));
+Ig_max_pool_5_expand = kron(Ig_max_pool_5, ones(total_max_pooling_reduction));
+
+
+% figure(11)
+% colormap(gray)
+% imagesc(Ig_max_pool_5_expand)
+
+loss_of_pizels = size(Ig_max_pool_5_expand) - size(Ig);
+border_loss = loss_of_pizels / 2;
+Ig_final_mins = Ig_min_pool_5_expand(border_loss(1):(size(Ig_min_pool_5_expand, 1) - border_loss(1) - 1), border_loss(2):(size(Ig_min_pool_5_expand, 2) - border_loss(2) - 1));
+Ig_final_maxims = Ig_max_pool_5_expand(border_loss(1):(size(Ig_max_pool_5_expand, 1) - border_loss(1) - 1), border_loss(2):(size(Ig_max_pool_5_expand, 2) - border_loss(2) - 1));
+% Ig_final_maxims = [Ig_max_pool_5_expand, zeros(size(Ig_max_pool_5_expand, 1) + loss_of_pizels(1), loss_of_pizels(2)); 
+%                     zeros(loss_of_pizels(1), size(Ig_max_pool_5_expand, 2) + loss_of_pizels(2))];
+
+figure(12)
+colormap(gray)
+imagesc(-Ig_final_maxims + Ig + Ig_final_mins)
+
