@@ -1,0 +1,12 @@
+V = zeros(480, 640, 3, 8, 'uint8');
+
+for i=2:8
+    
+    X = imread(strcat('0', int2str(i), '.jpg')); 
+    V(:,:,:,i) = X;
+    imshow(V(:,:,:,i));
+    
+end
+
+
+imshow(median(V,8))
