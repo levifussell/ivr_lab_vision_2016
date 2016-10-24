@@ -1,0 +1,38 @@
+\documentclass{article}
+
+\title{IVR Coursework 1\\}
+
+\date{Due: 27/08/2016}
+
+\author{Daniel Clemente: s1333465\\Levi Fussell: s1408726}
+
+
+\begin{document}
+	\raggedright
+	\pagenumbering{gobble}
+	\maketitle
+	
+	\newpage
+
+	\pagenumbering{arabic}
+
+\section{Introduction}
+
+
+\subsection{Methods}
+\subsubsection{Background Subtraction}
+
+
+
+\subsection{Detection}
+
+\subsection{Classification}
+
+
+
+\subsection{Results}
+
+\section{Code}
+
+
+\end{document}
