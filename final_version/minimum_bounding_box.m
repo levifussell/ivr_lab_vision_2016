@@ -15,8 +15,7 @@ function [box_final, box_left, box_right, box_top, box_bottom] = minimum_boundin
 
         box_left = round(max(1, (v_centre(2) - box_offset)));
         box_right = round(min(size(testData, 1), (v_centre(2) + box_offset)));
-        box_1 = testData(box_left:box_right,
-                        :);
+        box_1 = testData(box_left:box_right, :);
 
         data_box_1 = sum(sum(box_1, 1));
         data_gain = data_box_1 - box_data;
@@ -26,7 +25,7 @@ function [box_final, box_left, box_right, box_top, box_bottom] = minimum_boundin
         end
 
         box_data = data_box_1;
-        box_offset++;
+        box_offset = box_offset + 1;
 
     end
 
@@ -38,8 +37,7 @@ function [box_final, box_left, box_right, box_top, box_bottom] = minimum_boundin
 
         box_top = round(max(1, (v_centre(1) - box_offset)));
         box_bottom = round(min(size(testData, 2), (v_centre(1) + box_offset)));
-        box_1 = testData(box_left:box_right,
-                        box_top:box_bottom);
+        box_1 = testData(box_left:box_right, box_top:box_bottom);
 
         data_box_1 = sum(sum(box_1, 1));
         data_gain = data_box_1 - box_data;
@@ -49,7 +47,7 @@ function [box_final, box_left, box_right, box_top, box_bottom] = minimum_boundin
         end
 
         box_data = data_box_1;
-        box_offset++;
+        box_offset = box_offset + 1;
 
     end
 end

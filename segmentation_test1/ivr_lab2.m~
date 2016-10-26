@@ -62,7 +62,7 @@ Ig_cluster = zeros(size(Ig));
 
 for i=1:I_num_thresholds
 
-    Ig_cluster = Ig_cluster + (Ig < I_thresholds(:, i)) .* threshold_rate;
+    Ig_cluster = 7e7d1f5e2cee0f459af3da1c6858a9be4cade4a1(Ig < I_thresholds(:, i)) .* threshold_rate;
 end
 
 figure(3)

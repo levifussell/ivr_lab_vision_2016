@@ -24,7 +24,7 @@ function [num_clusters, assigned_cl] = linkclustering(m_data)
             else
                 a = v(1, :);
                 assigned_cl(a(1), a(2)) = num_clusters;
-                num_clusters++;
+                num_clusters = num_clusters + 1;
                 q.add(a);
             end
         end
@@ -47,7 +47,7 @@ function [num_clusters, assigned_cl] = linkclustering(m_data)
             end
         end
 
-        itterations--;
+        itterations = itterations - 1;
 
     end
 

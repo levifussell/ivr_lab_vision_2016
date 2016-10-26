@@ -5,8 +5,7 @@ function [image_scaled, target_scaled] = scale_image(m_image, m_image_target)
 
     image_scaled = kron(m_image, ones(scale_v));
     
-    target_scaled = m_image_target(1:(size(m_image_target, 1) - edge_loss(1)),
-                                    1:(size(m_image_target, 2) - edge_loss(2)));
+    target_scaled = m_image_target(1:(size(m_image_target, 1) - edge_loss(1)), 1:(size(m_image_target, 2) - edge_loss(2)));
 
     % loss_of_pixels = size(image_expand_tiled) - size(m_image_target);
     % border_loss_l = ceil(abs(loss_of_pixels / 2));

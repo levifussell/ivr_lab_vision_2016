@@ -25,7 +25,7 @@ function [image_processed, total_image_reduction] = apply_conv_pool_sequence(ima
         end
         
 
-        figure(int64(rand(1) * 1000))
+        figure(10101)%int64(rand(1) * 1000))
         colormap(gray)
         imagesc(image_processed);
     end

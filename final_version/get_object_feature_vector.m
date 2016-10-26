@@ -9,15 +9,15 @@ function [feature_vec] = get_object_feature_vector(m_image, i)
     g_im = int64(norm_im(:, :, 2) .* 255);
     b_im = int64(norm_im(:, :, 3) .* 255);
 
-    % figure(i * 1340)
-    % colormap(gray)
-    % imagesc(r_im)
-    % figure(i * 1042)
-    % colormap(gray)
-    % imagesc(g_im)
-    % figure(i * 10992)
-    % colormap(gray)
-    % imagesc(b_im)
+%     figure(i * 1340)
+%     colormap(gray)
+%     imagesc(r_im)
+%     figure(i * 1042)
+%     colormap(gray)
+%     imagesc(g_im)
+%     figure(i * 10992)
+%     colormap(gray)
+%     imagesc(b_im)
 
     r_im = max_pooling(r_im, 2);
 
@@ -26,7 +26,7 @@ function [feature_vec] = get_object_feature_vector(m_image, i)
     % colormap(gray)
     % imagesc(edge_r);
     edge_r_back = mode(reshape(edge_r, 1, size(edge_r, 1) * size(edge_r, 2)));
-    edge_r = edge_r != edge_r_back;
+    edge_r = edge_r ~= edge_r_back;
     
     g_im = max_pooling(g_im, 2);
 
@@ -35,7 +35,7 @@ function [feature_vec] = get_object_feature_vector(m_image, i)
     % colormap(gray)
     % imagesc(edge_g);
     edge_g_back = mode(reshape(edge_g, 1, size(edge_g, 1) * size(edge_g, 2)));
-    edge_g = edge_g != edge_g_back;
+    edge_g = edge_g ~= edge_g_back;
 
     b_im = max_pooling(b_im, 2);
 
@@ -44,7 +44,7 @@ function [feature_vec] = get_object_feature_vector(m_image, i)
     % colormap(gray)
     % imagesc(edge_b);
     edge_b_back = mode(reshape(edge_b, 1, size(edge_b, 1) * size(edge_b, 2)));
-    edge_b = edge_b != edge_b_back;
+    edge_b = edge_b ~= edge_b_back;
 
     % edge_total = (edge_b + edge_r) > 0; %((edge_r + edge_b + edge_g) ./ 3);
     % box_f = minimum_bounding_box(edge_total);

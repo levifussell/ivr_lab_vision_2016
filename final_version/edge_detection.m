@@ -1,18 +1,19 @@
-function [image_edge] = edge_detection(image_m, gauss_window, isNorm)
+function [image_edge] = edge_detection(image_m, gauss_window)
 
-    Ig = image_m;
-
-    edges = [0:255];
-
-    if isNorm
-        edges = linspace(0, 1, 255);
+%     edges = transpose(1:255);
+    edges = zeros(256, 1);
+    
+    for i = 1:256
+        edges(i) = i-1;
     end
 
-    [rows, columns] = size(Ig);
-    Ig_vec = reshape(Ig, 1, rows .* columns);
+    [rows, columns] = size(image_m);
+    Ig_vec = reshape(image_m, 1, rows * columns);
 
-    I_hist = histc(Ig_vec, edges);
-
+    size(Ig_vec)
+    size(edges)
+    I_hist = histcounts(Ig_vec, edges);
+    
     % figure(2)
     % plot(I_hist);
 
@@ -36,7 +37,7 @@ function [image_edge] = edge_detection(image_m, gauss_window, isNorm)
     b = smooth_hist < ([smooth_hist(:, 2:size(smooth_hist, 2)), 10] - repmat(offset_error, 1, size(smooth_hist, 2)));
     hist_maximums = a .* b .* smooth_hist;
 
-    hist_maximums -= 40000 .* (hist_maximums == 0);
+%     hist_maximums -= 40000 .* (hist_maximums == 0);
 
     % plot(hist_maximums, '*', 'markersize', 10)
 
@@ -50,11 +51,11 @@ function [image_edge] = edge_detection(image_m, gauss_window, isNorm)
     I_thresholds = find(hist_maximums > 0);
     I_num_thresholds = size(I_thresholds, 2);
     threshold_rate = 255 ./ I_num_thresholds;
-    Ig_cluster = zeros(size(Ig));
+    Ig_cluster = zeros(size(image_m));
 
     for i=1:I_num_thresholds
 
-        Ig_cluster += (Ig < I_thresholds(:, i)) .* threshold_rate;
+        Ig_cluster = Ig_cluster + (image_m < I_thresholds(:, i)) .* threshold_rate;
     end
 
     image_edge = Ig_cluster;
