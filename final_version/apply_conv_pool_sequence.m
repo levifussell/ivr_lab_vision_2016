@@ -5,11 +5,17 @@ function [image_processed, total_image_reduction] = apply_conv_pool_sequence(ima
     total_image_reduction = 1;
 
     % for now the filter is pre-set as a gaussian blur
-    filter = [1 4 7 4 1; 
-            4 16 36 16 4; 
-            7 26 41 26 7; 
-            4 16 26 16 4; 
+    filter = [1 4 7 4 1;
+            4 16 36 16 4;
+            7 26 41 26 7;
+            4 16 26 16 4;
             1 4 7 4 1] ./ 273;
+
+    % filter = [
+    %         16 36 16;
+    %         26 41 26;
+    %         16 26 16;
+    %         ] ./ 273;
 
     for i=1:size(sequence, 1)
 
@@ -23,11 +29,10 @@ function [image_processed, total_image_reduction] = apply_conv_pool_sequence(ima
             image_processed = max_pooling(image_processed, pool_v);
             total_image_reduction = total_image_reduction * pool_v;
         end
-        
 
-        figure(10101)%int64(rand(1) * 1000))
-        colormap(gray)
-        imagesc(image_processed);
+        % figure(int64(rand(1) * 1000))
+        % colormap(gray)
+        % imagesc(image_processed);
     end
 
 end

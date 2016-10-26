@@ -78,7 +78,7 @@ end
 
 % scatter3(obj_vectors(:, 1), obj_vectors(:, 2), obj_vectors(:, 3));
     % edge_im = edge_detection(final_images{i});
-    % max_pool_v1 = 2; 
+    % max_pool_v1 = 2;
     % max_pool_v2 = 2;
 
     % conv_pool_filter= [0, 0;
@@ -91,7 +91,7 @@ end
     % for j=1:size(final_images_sub, 2)
 
     %     % edge_im = edge_detection(final_images{i});
-    %     % max_pool_v1 = 2; 
+    %     % max_pool_v1 = 2;
     %     % max_pool_v2 = 2;
 
     %     % conv_pool_filter= [0, 0;
@@ -99,7 +99,7 @@ end
 
     %     % [ig_pool, total_image_reduction] = apply_conv_pool_sequence(final_images{i}, conv_pool_filter);
 
-        
+
 
     %     figure(i * 100 + j)
     %     colormap(gray)
@@ -150,7 +150,7 @@ end
     % imagesc(edge_r);
     % edge_r_back = mode(reshape(edge_r, 1, size(edge_r, 1) * size(edge_r, 2)));
     % edge_r = edge_r != edge_r_back;
-    
+
     % g_im = max_pooling(g_im, 2);
 
     % edge_g = edge_detection(g_im, gausswin(2, 1), false);
@@ -184,7 +184,7 @@ end
     % figure(1429 * i)
     % colormap(gray)
     % imagesc(box_f)
-    
+
     % % box_f_blur = apply_conv_pool_sequence(box_f, [0, 0]);
 
     % % box_f_mins = find_mins(box_f);
@@ -315,9 +315,9 @@ end
 
 % % -----
 % % first max_pooling the algorithm does; the lower this value, the more points
-% % selected on the object (also the more noise incorporated) 
+% % selected on the object (also the more noise incorporated)
 % % - the downside is that the program will run MUCH slower
-% max_pool_v1 = 7; 
+% max_pool_v1 = 7;
 % % -----
 % % second max_pooling; this value has not been experimented with and staying at
 % % 2 doesn't really improve or worsen the algorithm
@@ -336,13 +336,13 @@ end
 % % % -----
 % % % after the first max-pooling, the algorithm blurs the image so that there are less
 % % %  distinct pixels. It then proceeds to half the image again with another max-pooling
-% % filter =    [1 4 7 4 1; 
-% %             4 16 36 16 4; 
-% %             7 26 41 26 7; 
-% %             4 16 26 16 4; 
+% % filter =    [1 4 7 4 1;
+% %             4 16 36 16 4;
+% %             7 26 41 26 7;
+% %             4 16 26 16 4;
 % %             1 4 7 4 1] ./ 273;
-% % % filter =    [16 36 16; 
-% % %             26 41 26; 
+% % % filter =    [16 36 16;
+% % %             26 41 26;
 % % %             16 26 16] ./ 273;
 % % % filter = [16 36 16; 26 41 26; 16 26 16] ./ 273;
 % % % filter = [0 0 0; 0 1 0; 0 0 0];
@@ -424,7 +424,7 @@ end
 % % border_loss = loss_of_pizels / 2;
 % % Ig_final_mins = Ig_min_pool_5_expand(border_loss(1):(size(Ig_min_pool_5_expand, 1) - border_loss(1) - 1), border_loss(2):(size(Ig_min_pool_5_expand, 2) - border_loss(2) - 1));
 % % Ig_final_maxims = Ig_max_pool_5_expand(border_loss(1):(size(Ig_max_pool_5_expand, 1) - border_loss(1) - 1), border_loss(2):(size(Ig_max_pool_5_expand, 2) - border_loss(2) - 1));
-% % Ig_final_maxims = [Ig_max_pool_5_expand, zeros(size(Ig_max_pool_5_expand, 1) + loss_of_pizels(1), loss_of_pizels(2)); 
+% % Ig_final_maxims = [Ig_max_pool_5_expand, zeros(size(Ig_max_pool_5_expand, 1) + loss_of_pizels(1), loss_of_pizels(2));
 % %                     zeros(loss_of_pizels(1), size(Ig_max_pool_5_expand, 2) + loss_of_pizels(2))];
 
 % figure(13)
@@ -441,10 +441,10 @@ end
 %     [im_bounded, b_left, b_right, b_top, b_bottom] = minimum_bounding_box(im_cluster);
 %     % im_bounded = minimum_bounding_box(im_cluster);
 %     final_im = Ig(b_left:b_right, b_top:b_bottom);
-    
+
 %     final_images{i} = final_im;
 
-%     % final_im = max_pooling(final_im, 5);   
+%     % final_im = max_pooling(final_im, 5);
 
 %     % I_unbounded_cluster = Id .* repmat((Ig_final_mins == i), [1, 1, 3]);
 
@@ -454,7 +454,7 @@ end
 %     % remove_back = (sum(((final_im - repmat(common_rgb, [size(final_im, 1), size(final_im, 2), 1])) .^ 2), 3) > 0.01);
 %     % final_im_remove = final_im .* repmat(remove_back, [1, 1, 3]);
 
-%     % im_color_avg(i, :) = reshape(sum(sum(final_im_remove, 1)) ./ sum(sum(final_im_remove != 0, 1)), 1, 3); 
+%     % im_color_avg(i, :) = reshape(sum(sum(final_im_remove, 1)) ./ sum(sum(final_im_remove != 0, 1)), 1, 3);
 
 %     colormap(gray)
 %     imagesc(final_im)

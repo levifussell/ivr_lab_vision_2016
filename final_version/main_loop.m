@@ -11,6 +11,17 @@ I_collection{1} = imread('simpler/02.jpg');
 % I_collection{8} = imread('simpler/09.jpg');
 % I_collection{9} = imread('simpler/10.jpg');
 
+I_training = {};
+I_training{1} = imread('simpler/training/02.jpg');
+I_training{2} = imread('simpler/training/03.jpg');
+I_training{3} = imread('simpler/training/04.jpg');
+I_training{4} = imread('simpler/training/05.jpg');
+I_training{5} = imread('simpler/training/06.jpg');
+I_training{6} = imread('simpler/training/07.jpg');
+I_training{7} = imread('simpler/training/08.jpg');
+% I_training{8} = imread('simpler/training/09.jpg');
+% I_training{9} = imread('simpler/training/10.jpg');
+
 % I = imread('simpler/02.jpg');
 
 % figure(143412)
@@ -53,9 +64,17 @@ size(I_collection, 2)
 
 obj_vectors = [];
 
+obj_classes = [];
+
+obj_images = {};
+
+for i=1:11
+    obj_images{i} = {};
+end
+
 for j=1:size(I_collection, 2)
 
-    final_images = image_segmentation(I_collection{j}, 8, 2);
+    [final_images, class_images] = image_segmentation(I_collection{j}, I_training{j}, 6, 2);
 
     % obj_data = {};
     % obj_data{1, 1} = 'COM';
@@ -65,20 +84,84 @@ for j=1:size(I_collection, 2)
     % obj_data{1, 5} = '# black pxls in circle';
     % obj_data{1, 6} = 'avg. color';
 
-%     for i=1:size(final_images, 2)
-% 
-%         figure(i + j *11922)
-%         colormap(gray)
-%         imagesc(final_images{i})
-% 
-% %         obj_vectors(size(obj_vectors, 1) + 1, :) = get_object_feature_vector(final_images{i}, j * 101 + i);
-% 
-%     end
+    for i=1:size(final_images, 2)
+
+        % figure(i + j *11922)
+        % colormap(gray)
+        % imagesc(final_images{i})
+
+        % figure(i + j *119212)
+        % colormap(gray)
+        % imagesc(class_images{i})
+
+        class_type = get_class_from_training_image(class_images{i});
+        obj_classes(size(obj_vectors, 1) + 1, 1) = class_type;
+
+        [obj_vectors(size(obj_vectors, 1) + 1, :), feature_image] = get_object_feature_vector(final_images{i}, j * 101 + i);
+
+        if(class_type > 0)
+            obj_images{class_type}{size(obj_images{class_type}, 2) + 1} = feature_image;
+        else
+            obj_images{11}{size(obj_images{11}, 2) + 1} = feature_image;
+        end
+
+    end
 end
 
-% scatter3(obj_vectors(:, 1), obj_vectors(:, 2), obj_vectors(:, 3));
+indx_nan = find(sum(isnan(obj_vectors ), 2) > 0);
+obj_vectors(indx_nan,:) = [];
+obj_classes(indx_nan,:) = [];
+indx_neg = find(obj_classes < 0);
+obj_vectors(indx_neg,:) = [];
+obj_classes(indx_neg,:) = [];
+
+data_m = [obj_vectors, obj_classes];
+% % shuffle the matrix
+% rand_v = rand(size(data_m, 1), 1);
+% [r_sort, r_idx] = sort(rand_v);
+% data_m_shuffled = data_m(r_idx, :);
+
+% % divide data into train/test
+% train_idx = ceil(size(data_m_shuffled, 1) * 0.75);
+
+% data_train = data_m_shuffled(1:train_idx, :);
+% data_test = data_m_shuffled((train_idx + 1):size(data_m_shuffled, 1), :);
+
+[data_train, data_test] = create_train_test_data(data_m, 10, 0.75);
+
+[nb_means, nb_inv_cov, nb_a_priori] = ...
+    NB_model_build(data_train(:, 1:(size(data_train, 2) - 1)),
+    data_train(:, size(data_train, 2)), 10);
+
+pred_classes = zeros(size(data_test, 1), 1);
+
+for i=1:size(data_test, 1)
+
+    pred_classes(i, 1) = nb_classify_vec(data_test(i, 1:(size(data_test, 2) - 1)), nb_means, nb_inv_cov, nb_a_priori);
+
+end
+
+accuracy = error_analysis(pred_classes, data_test(:, size(data_test, 2)));
+
+con_m = confusion_matrix(pred_classes, data_test(:, size(data_test, 2)), 10)
+
+scatter3(obj_vectors(:, 1), obj_vectors(:, 2), obj_vectors(:, 3), 12, obj_classes);
+xlabel('circle comparison');
+ylabel('holes in object');
+set(get(gca, 'ZLabel'), 'String', 'colour hash');
+
+
+for c=1:10
+
+    for i=1:size(obj_images{c}, 2)
+        figure(c * 20 + i)
+        colormap(gray)
+        imagesc(obj_images{c}{i})
+    end
+
+end
     % edge_im = edge_detection(final_images{i});
-    % max_pool_v1 = 2; 
+    % max_pool_v1 = 2;
     % max_pool_v2 = 2;
 
     % conv_pool_filter= [0, 0;
@@ -91,7 +174,7 @@ end
     % for j=1:size(final_images_sub, 2)
 
     %     % edge_im = edge_detection(final_images{i});
-    %     % max_pool_v1 = 2; 
+    %     % max_pool_v1 = 2;
     %     % max_pool_v2 = 2;
 
     %     % conv_pool_filter= [0, 0;
@@ -99,7 +182,7 @@ end
 
     %     % [ig_pool, total_image_reduction] = apply_conv_pool_sequence(final_images{i}, conv_pool_filter);
 
-        
+
 
     %     figure(i * 100 + j)
     %     colormap(gray)
@@ -150,7 +233,7 @@ end
     % imagesc(edge_r);
     % edge_r_back = mode(reshape(edge_r, 1, size(edge_r, 1) * size(edge_r, 2)));
     % edge_r = edge_r != edge_r_back;
-    
+
     % g_im = max_pooling(g_im, 2);
 
     % edge_g = edge_detection(g_im, gausswin(2, 1), false);
@@ -184,7 +267,7 @@ end
     % figure(1429 * i)
     % colormap(gray)
     % imagesc(box_f)
-    
+
     % % box_f_blur = apply_conv_pool_sequence(box_f, [0, 0]);
 
     % % box_f_mins = find_mins(box_f);
@@ -315,9 +398,9 @@ end
 
 % % -----
 % % first max_pooling the algorithm does; the lower this value, the more points
-% % selected on the object (also the more noise incorporated) 
+% % selected on the object (also the more noise incorporated)
 % % - the downside is that the program will run MUCH slower
-% max_pool_v1 = 7; 
+% max_pool_v1 = 7;
 % % -----
 % % second max_pooling; this value has not been experimented with and staying at
 % % 2 doesn't really improve or worsen the algorithm
@@ -336,13 +419,13 @@ end
 % % % -----
 % % % after the first max-pooling, the algorithm blurs the image so that there are less
 % % %  distinct pixels. It then proceeds to half the image again with another max-pooling
-% % filter =    [1 4 7 4 1; 
-% %             4 16 36 16 4; 
-% %             7 26 41 26 7; 
-% %             4 16 26 16 4; 
+% % filter =    [1 4 7 4 1;
+% %             4 16 36 16 4;
+% %             7 26 41 26 7;
+% %             4 16 26 16 4;
 % %             1 4 7 4 1] ./ 273;
-% % % filter =    [16 36 16; 
-% % %             26 41 26; 
+% % % filter =    [16 36 16;
+% % %             26 41 26;
 % % %             16 26 16] ./ 273;
 % % % filter = [16 36 16; 26 41 26; 16 26 16] ./ 273;
 % % % filter = [0 0 0; 0 1 0; 0 0 0];
@@ -424,7 +507,7 @@ end
 % % border_loss = loss_of_pizels / 2;
 % % Ig_final_mins = Ig_min_pool_5_expand(border_loss(1):(size(Ig_min_pool_5_expand, 1) - border_loss(1) - 1), border_loss(2):(size(Ig_min_pool_5_expand, 2) - border_loss(2) - 1));
 % % Ig_final_maxims = Ig_max_pool_5_expand(border_loss(1):(size(Ig_max_pool_5_expand, 1) - border_loss(1) - 1), border_loss(2):(size(Ig_max_pool_5_expand, 2) - border_loss(2) - 1));
-% % Ig_final_maxims = [Ig_max_pool_5_expand, zeros(size(Ig_max_pool_5_expand, 1) + loss_of_pizels(1), loss_of_pizels(2)); 
+% % Ig_final_maxims = [Ig_max_pool_5_expand, zeros(size(Ig_max_pool_5_expand, 1) + loss_of_pizels(1), loss_of_pizels(2));
 % %                     zeros(loss_of_pizels(1), size(Ig_max_pool_5_expand, 2) + loss_of_pizels(2))];
 
 % figure(13)
@@ -441,10 +524,10 @@ end
 %     [im_bounded, b_left, b_right, b_top, b_bottom] = minimum_bounding_box(im_cluster);
 %     % im_bounded = minimum_bounding_box(im_cluster);
 %     final_im = Ig(b_left:b_right, b_top:b_bottom);
-    
+
 %     final_images{i} = final_im;
 
-%     % final_im = max_pooling(final_im, 5);   
+%     % final_im = max_pooling(final_im, 5);
 
 %     % I_unbounded_cluster = Id .* repmat((Ig_final_mins == i), [1, 1, 3]);
 
@@ -454,7 +537,7 @@ end
 %     % remove_back = (sum(((final_im - repmat(common_rgb, [size(final_im, 1), size(final_im, 2), 1])) .^ 2), 3) > 0.01);
 %     % final_im_remove = final_im .* repmat(remove_back, [1, 1, 3]);
 
-%     % im_color_avg(i, :) = reshape(sum(sum(final_im_remove, 1)) ./ sum(sum(final_im_remove != 0, 1)), 1, 3); 
+%     % im_color_avg(i, :) = reshape(sum(sum(final_im_remove, 1)) ./ sum(sum(final_im_remove != 0, 1)), 1, 3);
 
 %     colormap(gray)
 %     imagesc(final_im)

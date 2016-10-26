@@ -1,4 +1,4 @@
-function [final_images] = image_segmentation(image_m, pool1, pool2)
+function [final_images, final_class_images] = image_segmentation(image_m, class_image, pool1, pool2)
 
     I = image_m;
 
@@ -60,17 +60,17 @@ function [final_images] = image_segmentation(image_m, pool1, pool2)
 
     % -----
     % first max_pooling the algorithm does; the lower this value, the more points
-    % selected on the object (also the more noise incorporated) 
+    % selected on the object (also the more noise incorporated)
     % - the downside is that the program will run MUCH slower
-    max_pool_v1 = pool1; 
+    max_pool_v1 = pool1;
     % -----
     % second max_pooling; this value has not been experimented with and staying at
-    % 2 doesn't really improve or worsen the algorithm
+    % 2 doesn't really improve or worsen the algorithm'
     max_pool_v2 = pool2;
 
-    conv_pool_filter= [0, 0;
-                        1, max_pool_v1;
-                        1, max_pool_v2];
+    conv_pool_filter= [0, 0; 1, max_pool_v1;
+                    %    0, 0;
+                       1, max_pool_v2];
 
     [Ig_pool_5, total_image_reduction] = apply_conv_pool_sequence(Ig_cluster, conv_pool_filter);
 
@@ -84,8 +84,8 @@ function [final_images] = image_segmentation(image_m, pool1, pool2)
 
 
     [num_clusters, clustered] = linkclustering(Ig_not_min_pool_5);
-    figure(400)
-    imagesc(clustered)
+    % figure(int64(400 * rand(1)))
+    % imagesc(clustered)
     Ig_not_min_pool_5 = clustered;
 
     [Ig_final_not_mins, Ig] = scale_image(Ig_not_min_pool_5, Ig);
@@ -100,11 +100,12 @@ function [final_images] = image_segmentation(image_m, pool1, pool2)
     % colormap(gray)
     % imagesc(Ig_final_not_mins);
 
-    figure(20572)
-    colormap(gray)
-    imagesc(Ig_final_not_mins + Ig);
+    % figure(int64(20572 * rand(1)))
+    % colormap(gray)
+    % imagesc(Ig_final_not_mins + Ig);
 
     final_images = {};
+    final_class_images = {};
 
     for i=1:(num_clusters - 1)
         % figure(13 + i)
@@ -112,8 +113,9 @@ function [final_images] = image_segmentation(image_m, pool1, pool2)
         [im_bounded, b_left, b_right, b_top, b_bottom] = minimum_bounding_box(im_cluster);
         % im_bounded = minimum_bounding_box(im_cluster);
         final_im = Id(b_left:b_right, b_top:b_bottom, :);
-        
+
         final_images{i} = final_im;
+        final_class_images{i} = class_image(b_left:b_right, b_top:b_bottom, :);
     end
 
 end
