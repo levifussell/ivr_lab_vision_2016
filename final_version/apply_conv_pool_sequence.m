@@ -11,6 +11,12 @@ function [image_processed, total_image_reduction] = apply_conv_pool_sequence(ima
             4 16 26 16 4; 
             1 4 7 4 1] ./ 273;
 
+    % filter = [ 
+    %         16 36 16; 
+    %         26 41 26; 
+    %         16 26 16; 
+    %         ] ./ 273;
+
     for i=1:size(sequence, 1)
 
         % apply convolution
@@ -25,9 +31,9 @@ function [image_processed, total_image_reduction] = apply_conv_pool_sequence(ima
         end
         
 
-        figure(int64(rand(1) * 1000))
-        colormap(gray)
-        imagesc(image_processed);
+        % figure(int64(rand(1) * 1000))
+        % colormap(gray)
+        % imagesc(image_processed);
     end
 
 end
