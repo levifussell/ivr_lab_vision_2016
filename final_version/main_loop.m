@@ -145,7 +145,13 @@ pred_classes = nb_model.predict(data_test(:, 1:(size(data_test, 2) - 1)));
 % 
 % end
 
-accuracy = error_analysis(pred_classes, data_test(:, size(data_test, 2)));
+% do cross-validation on the modeling
+num_bins = 30;
+data_cv = create_cv_train_test_data(data_m, 10, num_bins);
+[accuracy, accuracies] = train_model_nb_cv_accuracy(data_cv);
+accuracy
+
+% accuracy = error_analysis(pred_classes, data_test(:, size(data_test, 2)));
 
 con_m = confusion_matrix(pred_classes, data_test(:, size(data_test, 2)), 10)
 

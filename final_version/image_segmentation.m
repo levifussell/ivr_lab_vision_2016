@@ -76,7 +76,7 @@ function [final_images, final_class_images] = image_segmentation(image_m, class_
 
     % draw_bumpmap(Ig_pool_5, 900);
 
-    Ig_not_min_pool_5 = find_not_mins(Ig_pool_5);
+    Ig_not_min_pool_5 = Ig_pool_5;
 
     Ig_max_pool_5 = find_maxs(Ig_pool_5);
 

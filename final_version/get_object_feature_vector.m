@@ -45,7 +45,8 @@ function [feature_vec, feature_image] = get_object_feature_vector(m_image, class
     % imagesc(edge_b);
     edge_b_back = mode(reshape(edge_b, 1, size(edge_b, 1) * size(edge_b, 2)));
     edge_b = edge_b ~= edge_b_back;
-
+    
+    
     % edge_total = (edge_b + edge_r) > 0; %((edge_r + edge_b + edge_g) ./ 3);
     % box_f = minimum_bounding_box(edge_total);
     % figure(1429 * i)
@@ -58,9 +59,9 @@ function [feature_vec, feature_image] = get_object_feature_vector(m_image, class
     edge_binary = sum(edge_total, 3);
     edge_binary = edge_binary - mode(reshape(edge_binary, 1, size(edge_binary, 1) * size(edge_binary, 2)));
     [box_f, l, r, t, b] = minimum_bounding_box(edge_binary > 0);
-    % figure(int64(1429 * rand(1)))
-    % colormap(gray)
-    % imagesc(box_f)
+    figure()
+    colormap(gray)
+    imagesc(box_f)
     
     % box_f_blur = apply_conv_pool_sequence(box_f, [0, 0]);
 
@@ -74,8 +75,8 @@ function [feature_vec, feature_image] = get_object_feature_vector(m_image, class
     m_image = m_image(1:size(m_image_new, 1), 1:size(m_image_new, 2), :);
     im_subtr = m_image(1:size(scl_binary, 1), 1:size(scl_binary, 2), :);
     im_subtr = im_subtr .* repmat(scl_binary, [1, 1, 3]);
-    % figure(int64(11982 * rand(1)))
-    % imagesc(im_subtr);
+    figure()
+    imagesc(im_subtr);
     color_avg = reshape(sum(sum(im_subtr, 1)) ./ sum(sum(scl_binary, 1)), 1, 3);
 
     % edges = linspace(0, 1, 255);
