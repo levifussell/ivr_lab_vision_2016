@@ -2,13 +2,13 @@
 
 I_collection = {};
 I_collection{1} = imread('simpler/02.jpg');
-% I_collection{2} = imread('simpler/03.jpg');
-% I_collection{3} = imread('simpler/04.jpg');
-% I_collection{4} = imread('simpler/05.jpg');
-% I_collection{1} = imread('simpler/06.jpg');
-% I_collection{6} = imread('simpler/07.jpg');
-% I_collection{7} = imread('simpler/08.jpg');
-% I_collection{8} = imread('simpler/09.jpg');
+I_collection{2} = imread('simpler/03.jpg');
+I_collection{3} = imread('simpler/04.jpg');
+I_collection{4} = imread('simpler/05.jpg');
+I_collection{5} = imread('simpler/06.jpg');
+I_collection{6} = imread('simpler/07.jpg');
+I_collection{7} = imread('simpler/08.jpg');
+I_collection{8} = imread('simpler/09.jpg');
 % I_collection{9} = imread('simpler/10.jpg');
 
 I_training = {};
@@ -19,7 +19,7 @@ I_training{4} = imread('simpler/training/05.jpg');
 I_training{5} = imread('simpler/training/06.jpg');
 I_training{6} = imread('simpler/training/07.jpg');
 I_training{7} = imread('simpler/training/08.jpg');
-% I_training{8} = imread('simpler/training/09.jpg');
+I_training{8} = imread('simpler/training/09.jpg');
 % I_training{9} = imread('simpler/training/10.jpg');
 
 % I = imread('simpler/02.jpg');
@@ -60,7 +60,7 @@ I_training{7} = imread('simpler/training/08.jpg');
 % colormap(gray)
 % imagesc(edge_b);
 
-size(I_collection, 2)
+% size(I_collection, 2)
 
 obj_vectors = [];
 
@@ -74,7 +74,7 @@ end
 
 for j=1:size(I_collection, 2)
 
-    [final_images, class_images] = image_segmentation(I_collection{j}, I_training{j}, 6, 2);
+    [final_images, class_images] = image_segmentation(I_collection{j}, I_training{j}, 7, 2);
 
     % obj_data = {};
     % obj_data{1, 1} = 'COM';
@@ -130,16 +130,19 @@ data_m = [obj_vectors, obj_classes];
 [data_train, data_test] = create_train_test_data(data_m, 10, 0.75);
 
 [nb_means, nb_inv_cov, nb_a_priori] = ...
-    NB_model_build(data_train(:, 1:(size(data_train, 2) - 1)),
+    NB_model_build(data_train(:, 1:(size(data_train, 2) - 1)), ...
     data_train(:, size(data_train, 2)), 10);
 
-pred_classes = zeros(size(data_test, 1), 1);
 
-for i=1:size(data_test, 1)
 
-    pred_classes(i, 1) = nb_classify_vec(data_test(i, 1:(size(data_test, 2) - 1)), nb_means, nb_inv_cov, nb_a_priori);
 
-end
+% pred_classes = zeros(size(data_test, 1), 1);
+% 
+% for i=1:size(data_test, 1)
+% 
+%     pred_classes(i, 1) = nb_classify_vec(data_test(i, 1:(size(data_test, 2) - 1)), nb_means, nb_inv_cov, nb_a_priori);
+% 
+% end
 
 accuracy = error_analysis(pred_classes, data_test(:, size(data_test, 2)));
 

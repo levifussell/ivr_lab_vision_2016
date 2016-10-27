@@ -30,9 +30,9 @@ function [image_processed, total_image_reduction] = apply_conv_pool_sequence(ima
             total_image_reduction = total_image_reduction * pool_v;
         end
 
-        % figure(int64(rand(1) * 1000))
-        % colormap(gray)
-        % imagesc(image_processed);
+        figure(20)
+        colormap(gray)
+        imagesc(image_processed);
     end
 
 end

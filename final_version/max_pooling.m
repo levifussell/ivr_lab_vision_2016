@@ -11,7 +11,7 @@ function [M] = max_pooling(m, m_size)
             c_ind = (c - 1) .* m_size + 1;
             overM = zeros(size(m));
             overM(r_ind:(r_ind+m_size - 1), c_ind:(c_ind+m_size - 1)) = double(ones(m_size, m_size));
-            pooled_out_m = overM .* m;
+            pooled_out_m = overM .* double(m);
             M(r, c) = max(max(pooled_out_m));
         end
     end
