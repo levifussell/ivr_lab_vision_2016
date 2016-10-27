@@ -1,4 +1,4 @@
-function [feature_vec, feature_image] = get_object_feature_vector(m_image, class_image, i)
+function [feature_vec, feature_image, full_image_chunk] = get_object_feature_vector(m_image, class_image, i)
 % given an image and a class image, this function will return a feature
 % vector that represents that object based on predefined built-in features
 
@@ -46,8 +46,13 @@ function [feature_vec, feature_image] = get_object_feature_vector(m_image, class
     %extract the object from the rest of the image by overlaying the binary
     %image onto the original object image
     im_subtr = m_image(1:size(scl_binary, 1), 1:size(scl_binary, 2), :);
+    
+    % save the image bounding box with full detail
+    full_image_chunk = im_subtr;
+    
+    %subtract image
     im_subtr = im_subtr .* repmat(scl_binary, [1, 1, 3]);
-
+    
     % get the average colour of the subtracted object for a classification
     % feature
     color_avg = reshape(sum(sum(im_subtr, 1)) ./ sum(sum(scl_binary, 1)), 1, 3);

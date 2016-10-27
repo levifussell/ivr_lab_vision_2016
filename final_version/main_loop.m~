@@ -1,5 +1,7 @@
-% % unix('mplayer tv:// -tv driver=v4l2:width=140:height=140:device=/dev/video1 -frames 1 -vo jpeg');
+% the file to run to begin interactive with the interface and train/load
+% models
 
+% get training data from file
 I_collection = {};
 I_collection{1} = imread('simpler/02.jpg');
 I_collection{2} = imread('simpler/03.jpg');
@@ -22,75 +24,83 @@ I_training{7} = imread('simpler/training/08.jpg');
 I_training{8} = imread('simpler/training/09.jpg');
 % I_training{9} = imread('simpler/training/10.jpg');
 
-obj_vectors = [];
-
-obj_classes = [];
-
-obj_images = {};
-
-for i=1:11
-    obj_images{i} = {};
+lacm = input('load a current model? Y/N\n\n   ', 's');
+if lacm == 'y' || lacm == 'Y'
+    new_model = false;
+else
+    new_model = true;
 end
 
-for j=1:size(I_collection, 2)
+% build a new model
+if new_model
 
-    [final_images, class_images] = image_segmentation(I_collection{j}, I_training{j}, 6, 2);
-
-    for i=1:size(final_images, 2)
-
-        % figure(i + j *11922)
-        % colormap(gray)
-        % imagesc(final_images{i})
-
-        % figure(i + j *119212)
-        % colormap(gray)
-        % imagesc(class_images{i})
-
-        class_type = get_class_from_training_image(class_images{i});
-        obj_classes(size(obj_vectors, 1) + 1, 1) = class_type;
-
-        [obj_vectors(size(obj_vectors, 1) + 1, :), feature_image] = get_object_feature_vector(final_images{i}, j * 101 + i);
-
-        if(class_type > 0)
-            obj_images{class_type}{size(obj_images{class_type}, 2) + 1} = feature_image;
-        else
-            obj_images{11}{size(obj_images{11}, 2) + 1} = feature_image;
-        end
-
+    % series of inputs from user
+    ss = input('show image segments? Y/N\n\n   ', 's');
+    if ss == 'y' || ss == 'Y'
+        show_segments = true;
+    else
+        show_segments = false;
     end
+
+    sfvs = input('show feature vector space? Y/N\n\n   ', 's');
+    if sfvs == 'y' || sfvs == 'Y'
+        show_vec = true;
+    else
+        show_vec = false;
+    end
+
+    model_name = input('type name of model: \n\n   ', 's');
+
+    input('...click enter to begin building the model...');
+
+    % train the model
+    [nb_model, model_train_vecs, confusion_m, m_accuracy] = train_new_model(I_collection, I_training, show_segments, show_vec);
+
+    % save the model file locally
+    file_name = strcat([model_name, '.csv']);
+    file_data = model_train_vecs;
+    delim = ',';
+
+    dlmwrite(file_name, file_data, delim);
+else
+    % load a current model
+    old_model_file = input('type the filename of your model: \n\n   ', 's');
+    old_model_file = strcat([old_model_file, '.csv']);
+
+    delim = ',';
+    file_data = dlmread(old_model_file, delim);
+
+    input('loaded successfully. Hit enter to format the model...\n\n   ');
+    
+    % build the model from the training data (we can do this because models
+    % are so small the user won't notice it being rebuilt)
+    nb_model = fitNaiveBayes(file_data(:, 1:(size(file_data, 2) - 1)), file_data(:, size(file_data, 2)));
+    
+    feed = 'c';
+    
+    while feed == 'C' || feed == 'c'
+        
+        im_file = input('type image file to classify:\n\n   ', 's');
+        
+        pred_im = imread(im_file);
+        
+        % segment the objects from the image
+        [final_images, class_images] = image_segmentation(pred_im, pred_im, 6, 2);
+
+        obj_vectors = [];
+        
+        % itterate over each segmented object
+        for i=1:size(final_images, 2)
+            % get the feature vector for this object
+            [obj_vectors(size(obj_vectors, 1) + 1, :), feature_image] = get_object_feature_vector(final_images{i}, i * 101);
+            figure()
+            imagesc(feature_image)
+        end
+        
+        pred_class = nb_model.predict(obj_vectors)
+        
+    end
+    
 end
 
-indx_nan = find(sum(isnan(obj_vectors ), 2) > 0);
-obj_vectors(indx_nan,:) = [];
-obj_classes(indx_nan,:) = [];
-indx_neg = find(obj_classes < 0);
-obj_vectors(indx_neg,:) = [];
-obj_classes(indx_neg,:) = [];
 
-data_m = [obj_vectors, obj_classes];
-
-% % divide data into train/test
-[data_train, data_test] = create_train_test_data(data_m, 10, 0.75);
-
-nb_model = fitNaiveBayes(data_train(:, 1:(size(data_train, 2) - 1)), data_train(:, size(data_train, 2)));
-pred_classes = nb_model.predict(data_test(:, 1:(size(data_test, 2) - 1)));
-
-accuracy = error_analysis(pred_classes, data_test(:, size(data_test, 2)));
-
-con_m = confusion_matrix(pred_classes, data_test(:, size(data_test, 2)), 10)
-
-scatter3(obj_vectors(:, 1), obj_vectors(:, 2), obj_vectors(:, 3), 12, obj_classes);
-xlabel('circle comparison');
-ylabel('holes in object');
-set(get(gca, 'ZLabel'), 'String', 'colour hash');
-
-
-% for c=1:10
-% 
-%     for i=1:size(obj_images{c}, 2)
-%         figure(c * 20 + i)
-%         colormap(gray)
-%         imagesc(obj_images{c}{i})
-%     end
-% 
-% end
