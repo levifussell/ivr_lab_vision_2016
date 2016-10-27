@@ -38,7 +38,7 @@ function [feature_vec, feature_image] = get_object_feature_vector(m_image, class
     edge_binary = edge_binary - mode(reshape(edge_binary, 1, size(edge_binary, 1) * size(edge_binary, 2)));
     % find the minimum-bounding box of the binary image
     [box_f, l, r, t, b] = minimum_bounding_box(edge_binary > 0);
-
+    
     % scale the binary image to the original ratio and convert the current
     % image to the new shared ratio
     [scl_binary, m_image_new] = scale_image(edge_binary, m_image(:, :, 1));
