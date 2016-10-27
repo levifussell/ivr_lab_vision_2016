@@ -1,7 +1,7 @@
 function [feature_vec, feature_image] = get_object_feature_vector(m_image, class_image, i)
+% given an image and a class image, this function will return a feature
+% vector that represents that object based on predefined built-in features
 
-    % figure(i)
-    % imagesc(m_image)
 
     norm_im = m_image ./ repmat(sum(m_image, 3), [1, 1, 3]);
 
@@ -59,9 +59,9 @@ function [feature_vec, feature_image] = get_object_feature_vector(m_image, class
     edge_binary = sum(edge_total, 3);
     edge_binary = edge_binary - mode(reshape(edge_binary, 1, size(edge_binary, 1) * size(edge_binary, 2)));
     [box_f, l, r, t, b] = minimum_bounding_box(edge_binary > 0);
-    figure()
-    colormap(gray)
-    imagesc(box_f)
+%     figure()
+%     colormap(gray)
+%     imagesc(box_f)
     
     % box_f_blur = apply_conv_pool_sequence(box_f, [0, 0]);
 
@@ -75,8 +75,8 @@ function [feature_vec, feature_image] = get_object_feature_vector(m_image, class
     m_image = m_image(1:size(m_image_new, 1), 1:size(m_image_new, 2), :);
     im_subtr = m_image(1:size(scl_binary, 1), 1:size(scl_binary, 2), :);
     im_subtr = im_subtr .* repmat(scl_binary, [1, 1, 3]);
-    figure()
-    imagesc(im_subtr);
+%     figure()
+%     imagesc(im_subtr);
     color_avg = reshape(sum(sum(im_subtr, 1)) ./ sum(sum(scl_binary, 1)), 1, 3);
 
     % edges = linspace(0, 1, 255);
@@ -95,7 +95,7 @@ function [feature_vec, feature_image] = get_object_feature_vector(m_image, class
     % obj_data{1 + i, 5} = empty_pixels_in_circle(box_f);
     % obj_data{1 + i, 6} = color_avg(1) + (color_avg(2) + 1) .^ 2 + (color_avg(3) + 2) .^ 3;
 
-    feature_vec = zeros(1, 4);
+    feature_vec = zeros(1, 5);
 
     feature_vec(1, 1) = circle_comparison(box_f);
     feature_vec(1, 2) = empty_pixels_in_circle(box_f);

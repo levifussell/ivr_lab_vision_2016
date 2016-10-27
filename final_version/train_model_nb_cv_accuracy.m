@@ -18,7 +18,7 @@ function [ accuracy, accuracies ] = train_model_nb_cv_accuracy( cv_data )
         
         nb_model = fitNaiveBayes(train_data(:, 1:(size(train_data, 2) - 1)), train_data(:, size(train_data, 2)));
         pred_classes = nb_model.predict(test_data(:, 1:(size(test_data, 2) - 1)));
-        accuracies(i, 1) = error_analysis(pred_classes, test_data(:, size(test_data, 2)));
+        accuracies(i, 1) = calc_accuracy(pred_classes, test_data(:, size(test_data, 2)));
         
     end
     

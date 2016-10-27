@@ -2,14 +2,14 @@ function [image_edge] = edge_detection(image_m, gauss_window)
 % uses thresholds and convolution matrices to segment an image into the
 % most significant buckets. This function does not make the image binary,
 % but is a pre-processing step for doing so; instead it reduces the
-% complexity of the image and helps for background removal
+% complexity of the image and helps for 
 
-    edges = transpose(1:255);
-%     edges = zeros(256, 1);
-%     
-%     for i = 1:256
-%         edges(i) = i-1;
-%     end
+%     edges = transpose(1:255);
+    edges = zeros(256, 1);
+    
+    for i = 1:256
+        edges(i) = i-1;
+    end
 
     [rows, columns] = size(image_m);
     Ig_vec = reshape(image_m, 1, rows * columns);
