@@ -1,4 +1,6 @@
 function [data_bins] = create_cv_train_test_data(data_m, num_classes, num_bins)
+% shuffles the data and sorts it into even sized bins for cross validation;
+% each bin must also contain the same class distribution within it.
 
     data_bins = {};
 
@@ -11,13 +13,14 @@ function [data_bins] = create_cv_train_test_data(data_m, num_classes, num_bins)
     
         class_data = data_m(find(data_m(:, size(data_m, 2)) == i), :); 
 
-        % shuffle the matrix
+        % shuffle the matrix of a single class data
         rand_v = rand(size(class_data, 1), 1);
         [r_sort, r_idx] = sort(rand_v);
         class_data_shuffled = class_data(r_idx, :);
 
         indx_rate = size(class_data_shuffled, 1) ./ num_bins;
         
+        % dispense the class data evenly through all the bins
         for c=1:num_bins
             c_min = 1 + floor((c - 1) * indx_rate);
             c_max = ceil(c * indx_rate);

@@ -53,7 +53,7 @@ function [final_images, final_class_images] = image_segmentation(image_m, class_
     final_class_images = {};
 
     % itterate through each cluster
-    for i=1:(num_clusters)
+    for i=1:(num_clusters - 1)
         % figure(13 + i)
         % get the cluster
         im_cluster = Ig .* (scaled_filtered_I == i);
