@@ -68,8 +68,8 @@ function [final_images, final_class_images] = image_segmentation(image_m, class_
     % 2 doesn't really improve or worsen the algorithm'
     max_pool_v2 = pool2;
 
-    conv_pool_filter= [1, max_pool_v1;
-                       0, 0;
+    conv_pool_filter= [0, 0; 1, max_pool_v1;
+%                        0, 0;
                        1, max_pool_v2];
 
     [Ig_pool_5, total_image_reduction] = apply_conv_pool_sequence(Ig_cluster, conv_pool_filter);

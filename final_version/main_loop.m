@@ -74,7 +74,7 @@ end
 
 for j=1:size(I_collection, 2)
 
-    [final_images, class_images] = image_segmentation(I_collection{j}, I_training{j}, 7, 2);
+    [final_images, class_images] = image_segmentation(I_collection{j}, I_training{j}, 6, 2);
 
     % obj_data = {};
     % obj_data{1, 1} = 'COM';
@@ -129,12 +129,13 @@ data_m = [obj_vectors, obj_classes];
 
 [data_train, data_test] = create_train_test_data(data_m, 10, 0.75);
 
-[nb_means, nb_inv_cov, nb_a_priori] = ...
-    NB_model_build(data_train(:, 1:(size(data_train, 2) - 1)), ...
-    data_train(:, size(data_train, 2)), 10);
+% [nb_means, nb_inv_cov, nb_a_priori] = ...
+%     NB_model_build(data_train(:, 1:(size(data_train, 2) - 1)), ...
+%     data_train(:, size(data_train, 2)), 10);
 
 
-
+nb_model = fitNaiveBayes(data_train(:, 1:(size(data_train, 2) - 1)), data_train(:, size(data_train, 2)));
+pred_classes = nb_model.predict(data_test(:, 1:(size(data_test, 2) - 1)));
 
 % pred_classes = zeros(size(data_test, 1), 1);
 % 
@@ -154,15 +155,15 @@ ylabel('holes in object');
 set(get(gca, 'ZLabel'), 'String', 'colour hash');
 
 
-for c=1:10
-
-    for i=1:size(obj_images{c}, 2)
-        figure(c * 20 + i)
-        colormap(gray)
-        imagesc(obj_images{c}{i})
-    end
-
-end
+% for c=1:10
+% 
+%     for i=1:size(obj_images{c}, 2)
+%         figure(c * 20 + i)
+%         colormap(gray)
+%         imagesc(obj_images{c}{i})
+%     end
+% 
+% end
     % edge_im = edge_detection(final_images{i});
     % max_pool_v1 = 2;
     % max_pool_v2 = 2;
