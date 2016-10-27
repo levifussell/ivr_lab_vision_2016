@@ -1,4 +1,7 @@
 function [con_m] = confusion_matrix(model_value, expected_value, num_classes)
+% given the output of the model and the expected output of the model (and
+% number of epected classes), create a confusion matrix for analysing the
+% correctness of the model
 
     con_m = zeros(num_classes, num_classes);
 

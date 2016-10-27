@@ -1,61 +1,35 @@
 function [feature_vec, feature_image] = get_object_feature_vector(m_image, class_image, i)
+% given an image and a class image, this function will return a feature
+% vector that represents that object based on predefined built-in features
 
-    % figure(i)
-    % imagesc(m_image)
-
+    % normalise the image
     norm_im = m_image ./ repmat(sum(m_image, 3), [1, 1, 3]);
 
+    % get the normalised R, G, and B matrices
     r_im = int64(norm_im(:, :, 1) .* 255);
     g_im = int64(norm_im(:, :, 2) .* 255);
     b_im = int64(norm_im(:, :, 3) .* 255);
 
-%     figure(i * 1340)
-%     colormap(gray)
-%     imagesc(r_im)
-%     figure(i * 1042)
-%     colormap(gray)
-%     imagesc(g_im)
-%     figure(i * 10992)
-%     colormap(gray)
-%     imagesc(b_im)
-
+    % perform max-pooling on each matrix to reduce noise
     r_im = max_pooling(r_im, 2);
-
+    % perform edge detection
     edge_r = edge_detection(r_im, gausswin(2, 1));
-    % figure(1000 * i)
-    % colormap(gray)
-    % imagesc(edge_r);
+    % remove background by finding the most common colour
     edge_r_back = mode(reshape(edge_r, 1, size(edge_r, 1) * size(edge_r, 2)));
     edge_r = edge_r ~= edge_r_back;
     
     g_im = max_pooling(g_im, 2);
-
     edge_g = edge_detection(g_im, gausswin(2, 1));
-    % figure(1201 * i)
-    % colormap(gray)
-    % imagesc(edge_g);
     edge_g_back = mode(reshape(edge_g, 1, size(edge_g, 1) * size(edge_g, 2)));
     edge_g = edge_g ~= edge_g_back;
 
     b_im = max_pooling(b_im, 2);
-
     edge_b = edge_detection(b_im, gausswin(2, 1));
-    % figure(1021 * i)
-    % colormap(gray)
-    % imagesc(edge_b);
     edge_b_back = mode(reshape(edge_b, 1, size(edge_b, 1) * size(edge_b, 2)));
     edge_b = edge_b ~= edge_b_back;
 
-    % edge_total = (edge_b + edge_r) > 0; %((edge_r + edge_b + edge_g) ./ 3);
-    % box_f = minimum_bounding_box(edge_total);
-    % figure(1429 * i)
-    % colormap(gray)
-    % imagesc(box_f)
-    edge_total = zeros(size(edge_b, 1), size(edge_b, 2), 3);
-    edge_total(:, :, 1) = edge_r; %- mode(reshape(edge_r, 1, size(edge_r, 1) * size(edge_r, 2)));
-    edge_total(:, :, 2) = edge_g; %- mode(reshape(edge_g, 1, size(edge_g, 1) * size(edge_g, 2)));;
-    edge_total(:, :, 3) = edge_b; %- mode(reshape(edge_b, 1, size(edge_b, 1) * size(edge_b, 2)));;
-    edge_binary = sum(edge_total, 3);
+    
+    edge_binary = edge_r + edge_b + edge_g;
     edge_binary = edge_binary - mode(reshape(edge_binary, 1, size(edge_binary, 1) * size(edge_binary, 2)));
     [box_f, l, r, t, b] = minimum_bounding_box(edge_binary > 0);
     % figure(int64(1429 * rand(1)))
@@ -94,13 +68,15 @@ function [feature_vec, feature_image] = get_object_feature_vector(m_image, class
     % obj_data{1 + i, 5} = empty_pixels_in_circle(box_f);
     % obj_data{1 + i, 6} = color_avg(1) + (color_avg(2) + 1) .^ 2 + (color_avg(3) + 2) .^ 3;
 
-    feature_vec = zeros(1, 3);
+    feature_vec = zeros(1, 5);
 
     feature_vec(1, 1) = circle_comparison(box_f);
-    area = bwarea(box_f);
-    perim = bwarea(
-    feature_vec(1, 2) = bwarea(bwperim(box_f, 4)) ./ bwarea(box_f);%empty_pixels_in_circle(box_f);
+    feature_vec(1, 2) = empty_pixels_in_circle(box_f);
     feature_vec(1, 3) = color_avg(1) + (color_avg(2) + 1) .^ 2 + (color_avg(3) + 2) .^ 3;
+    feature_vec(1, 4) = density_of_image(box_f);
+    area = bwarea(box_f);
+    perim = bwarea(bwperim(box_f, 4));
+    feature_vec(1, 5) = perim*perim/(4*pi*area);
 
     feature_image = box_f;
     % feature_vec(1, 4) = density_of_image(box_f);

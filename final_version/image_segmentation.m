@@ -1,25 +1,22 @@
 function [final_images, final_class_images] = image_segmentation(image_m, class_image, pool1, pool2)
+% given an image, a training class image and 2 max-pooling values, perform
+% image segmentation via blob-analysis and attempt to remove blobs as
+% individual minimum-bounding boxes
 
-    I = image_m;
-
-    Id = double(I) / 255;
-    Id_norm = Id ./ repmat(sum(Id, 3), [1, 1, 3]);
-    Ig = sum(I, 3) / 3;
-
-
-    % Ig_cluster = edge_detection(Ig, gausswin(80, 6), false);
-
+    Id = double(image_m) / 255;
+    % greyscale the image
+    Ig = sum(image_m, 3) / 3;
+    % normalise the image
     norm_im = Id ./ repmat(sum(Id, 3), [1, 1, 3]);
 
+    % take the seperate R, G, and B matrices of the image
     r_im = int64(norm_im(:, :, 1) .* 255);
     g_im = int64(norm_im(:, :, 2) .* 255);
     b_im = int64(norm_im(:, :, 3) .* 255);
 
-    % figure(1112)
-    % colormap(gray)
-    % imagesc(b_im)
-
+    % perform edge detection on each R, G, and B matrix
     edge_r = edge_detection(r_im, gausswin(5, 2));
+    % remove the background by finding the most common colour
     edge_r_back = mode(reshape(edge_r, 1, size(edge_r, 1) * size(edge_r, 2)));
     edge_r_back_remove = edge_r ~= edge_r_back;
 
@@ -31,90 +28,39 @@ function [final_images, final_class_images] = image_segmentation(image_m, class_
     edge_b_back = mode(reshape(edge_b, 1, size(edge_b, 1) * size(edge_b, 2)));
     edge_b_back_remove = edge_b ~= edge_b_back;
 
-    Ig_cluster = ceil((edge_r_back_remove + edge_g_back_remove + edge_b_back_remove) ./ 3);
+    % perform binary OR on R, G, and B to get a full edge image
+    Ig_edged = ceil((edge_r_back_remove + edge_g_back_remove + edge_b_back_remove) ./ 3);
 
-    % figure(224222)
-    % colormap(gray)
-    % imagesc(edge_r)
-    % figure(22420)
-    % colormap(gray)
-    % imagesc(edge_r_back_remove)
+    % perform a sequence of max-pooling and guassian convolution filters
+    conv_pool_filter= [0, 0; 
+                        1, pool1;
+                       1, pool2];
 
-    % figure(2242112342)
-    % colormap(gray)
-    % imagesc(edge_g)
-    % figure(22421)
-    % colormap(gray)
-    % imagesc(edge_g_back_remove)
+    [filtered_I, total_image_reduction] = apply_conv_pool_sequence(Ig_edged, conv_pool_filter);
 
-    % figure(22421111)
-    % colormap(gray)
-    % imagesc(edge_b)
-    % figure(22423)
-    % colormap(gray)
-    % imagesc(edge_b_back_remove)
+    % cluster the blobs using linkclustering
+    [num_clusters, clustered] = linkclustering(filtered_I);
 
-    % figure(222222)
-    % colormap(gray)
-    % imagesc(Ig_cluster)
-
-    % -----
-    % first max_pooling the algorithm does; the lower this value, the more points
-    % selected on the object (also the more noise incorporated)
-    % - the downside is that the program will run MUCH slower
-    max_pool_v1 = pool1;
-    % -----
-    % second max_pooling; this value has not been experimented with and staying at
-    % 2 doesn't really improve or worsen the algorithm'
-    max_pool_v2 = pool2;
-
-    conv_pool_filter= [0, 0; 1, max_pool_v1;
-%                        0, 0;
-                       1, max_pool_v2];
-
-    [Ig_pool_5, total_image_reduction] = apply_conv_pool_sequence(Ig_cluster, conv_pool_filter);
-
-    % draw_bumpmap(Ig_pool_5, 900);
-
-    Ig_not_min_pool_5 = find_not_mins(Ig_pool_5);
-
-    Ig_max_pool_5 = find_maxs(Ig_pool_5);
-
-    Ig_min_pool_5 = find_mins(Ig_pool_5);
-
-
-    [num_clusters, clustered] = linkclustering(Ig_not_min_pool_5);
-    % figure(int64(400 * rand(1)))
-    % imagesc(clustered)
-    Ig_not_min_pool_5 = clustered;
-
-    [Ig_final_not_mins, Ig] = scale_image(Ig_not_min_pool_5, Ig);
-    [Ig_final_maxims] = scale_image(Ig_max_pool_5, Ig);
-    [Ig_final_mins] = scale_image(Ig_min_pool_5, Ig);
-
-    % figure(20056)
-    % colormap(gray)
-    % imagesc(Ig_final_maxims);
-
-    % figure(20751)
-    % colormap(gray)
-    % imagesc(Ig_final_not_mins);
-
-    % figure(int64(20572 * rand(1)))
-    % colormap(gray)
-    % imagesc(Ig_final_not_mins + Ig);
+    % scale the image back to the original size (scaled due to convolutions
+    % and max-pooling)
+    [scaled_filtered_I, Ig] = scale_image(clustered, Ig);
 
     final_images = {};
     final_class_images = {};
 
-    for i=1:(num_clusters - 1)
+    % itterate through each cluster
+    for i=1:(num_clusters)
         % figure(13 + i)
-        im_cluster = Ig .* (Ig_final_not_mins == i);
+        % get the cluster
+        im_cluster = Ig .* (scaled_filtered_I == i);
+        % get the minimum-bounding box of the cluster
         [im_bounded, b_left, b_right, b_top, b_bottom] = minimum_bounding_box(im_cluster);
         % im_bounded = minimum_bounding_box(im_cluster);
-        final_im = Id(b_left:b_right, b_top:b_bottom, :);
-
-        final_images{i} = final_im;
+        
+        % take the bounding box from the original image
+        final_images{i} = Id(b_left:b_right, b_top:b_bottom, :);
+        
+        % take the bounding box from the training image
         final_class_images{i} = class_image(b_left:b_right, b_top:b_bottom, :);
     end
 

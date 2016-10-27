@@ -1,4 +1,8 @@
 function [M] = max_pooling(m, m_size)
+% given an image m and a size of the pool, perform max pooling wit step
+% size equal to the size of the pool over the image. This will reduce the
+% images size by the size of the pool (note: if image dimensions and pool
+% size are not divisible, some image data will be lost)
 
     pool_r = floor(size(m, 1) / m_size);
     pool_c = floor(size(m, 2) / m_size);

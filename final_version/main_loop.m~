@@ -28,28 +28,29 @@ obj_classes = [];
 
 obj_images = {};
 
-%TEMP
 for i=1:11
     obj_images{i} = {};
 end
 
-% itterate over each image in the collection of images
 for j=1:size(I_collection, 2)
 
-    % segment the objects from the image
     [final_images, class_images] = image_segmentation(I_collection{j}, I_training{j}, 6, 2);
 
-    % itterate over each segmented object
     for i=1:size(final_images, 2)
 
-        % get the class for this object
+        % figure(i + j *11922)
+        % colormap(gray)
+        % imagesc(final_images{i})
+
+        % figure(i + j *119212)
+        % colormap(gray)
+        % imagesc(class_images{i})
+
         class_type = get_class_from_training_image(class_images{i});
         obj_classes(size(obj_vectors, 1) + 1, 1) = class_type;
 
-        % get the feature vector for this object
         [obj_vectors(size(obj_vectors, 1) + 1, :), feature_image] = get_object_feature_vector(final_images{i}, j * 101 + i);
 
-        % TEMP
         if(class_type > 0)
             obj_images{class_type}{size(obj_images{class_type}, 2) + 1} = feature_image;
         else
@@ -59,8 +60,6 @@ for j=1:size(I_collection, 2)
     end
 end
 
-% find feature vectors that were made incorrectly (error in segmentation)
-% and remove them
 indx_nan = find(sum(isnan(obj_vectors ), 2) > 0);
 obj_vectors(indx_nan,:) = [];
 obj_classes(indx_nan,:) = [];
@@ -68,25 +67,18 @@ indx_neg = find(obj_classes < 0);
 obj_vectors(indx_neg,:) = [];
 obj_classes(indx_neg,:) = [];
 
-% create a data|class matrix for training
 data_m = [obj_vectors, obj_classes];
 
 % % divide data into train/test
 [data_train, data_test] = create_train_test_data(data_m, 10, 0.75);
 
-% train a Naive Bayes classifier on the data
 nb_model = fitNaiveBayes(data_train(:, 1:(size(data_train, 2) - 1)), data_train(:, size(data_train, 2)));
-
-% apply the NB model to the test set
 pred_classes = nb_model.predict(data_test(:, 1:(size(data_test, 2) - 1)));
 
-% measure the accuracy of the output
-accuracy = calc_accuracy(pred_classes, data_test(:, size(data_test, 2)));
+accuracy = error_analysis(pred_classes, data_test(:, size(data_test, 2)));
 
-% create a confusion matrix of the ouput
-con_m = confusion_matrix(pred_classes, data_test(:, size(data_test, 2)), 10);
+con_m = confusion_matrix(pred_classes, data_test(:, size(data_test, 2)), 10)
 
-% display a feature vector space of first 3 features for analysis
 scatter3(obj_vectors(:, 1), obj_vectors(:, 2), obj_vectors(:, 3), 12, obj_classes);
 xlabel('circle comparison');
 ylabel('holes in object');
