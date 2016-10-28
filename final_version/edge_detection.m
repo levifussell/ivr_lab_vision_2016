@@ -15,7 +15,7 @@ function [image_edge] = edge_detection(image_m, gauss_window, break_points)
     Ig_vec = reshape(image_m, 1, rows * columns);
 
     % NOTE: use histc for Octave and histcounts for Matlab
-    I_hist = histc(Ig_vec, edges);
+    I_hist = histcounts(Ig_vec, edges);
 
     % smooth the histogram with a gaussian
     filter = gauss_window;

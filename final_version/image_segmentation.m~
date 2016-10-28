@@ -147,8 +147,6 @@ function [final_images, final_class_images, final_class_boxes] = image_segmentat
         colormap(gray)
         imagesc(Ig_bounded_boxes)
         text(10, 10, 'hello')
-        figure(14)
-        imagesc(Ig_classes_bounded_boxes)
         input('create minimum bounding boxes. continue?');
     end
 

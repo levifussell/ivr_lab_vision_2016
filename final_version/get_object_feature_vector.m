@@ -128,10 +128,10 @@ function [feature_vec, feature_image, full_image_chunk] = get_object_feature_vec
     % feat 4: the density of the white pixels in the object image
     feature_vec(1, 4) = density_of_image(box_f);
     % feat 5: the compression of the object
-    % area = bwarea(box_f);
-    % perim = bwarea(bwperim(box_f, 4));
-    % feature_vec(1, 5) = perim*perim/(4*pi*area);
-    feature_vec(1, 5) = 1;
+    area = bwarea(box_f);
+    perim = bwarea(bwperim(box_f, 4));
+    feature_vec(1, 5) = perim*perim/(4*pi*area);
+%     feature_vec(1, 5) = 1;
 
     if break_points
         text(5, 5, strcat(['f1 - circle comparison: ', num2str(feature_vec(1, 1))]), 'color', 'red')

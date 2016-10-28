@@ -4,24 +4,24 @@
 % get training data from file
 I_collection = {};
 I_collection{1} = imread('simpler/02.jpg');
-% I_collection{2} = imread('simpler/03.jpg');
-% I_collection{3} = imread('simpler/04.jpg');
-% I_collection{4} = imread('simpler/05.jpg');
-% I_collection{5} = imread('simpler/06.jpg');
-% I_collection{6} = imread('simpler/07.jpg');
-% I_collection{7} = imread('simpler/08.jpg');
-% I_collection{8} = imread('simpler/09.jpg');
+I_collection{2} = imread('simpler/03.jpg');
+I_collection{3} = imread('simpler/04.jpg');
+I_collection{4} = imread('simpler/05.jpg');
+I_collection{5} = imread('simpler/06.jpg');
+I_collection{6} = imread('simpler/07.jpg');
+I_collection{7} = imread('simpler/08.jpg');
+I_collection{8} = imread('simpler/09.jpg');
 % I_collection{9} = imread('simpler/10.jpg');
 
 I_training = {};
 I_training{1} = imread('simpler/training/02.jpg');
-% I_training{2} = imread('simpler/training/03.jpg');
-% I_training{3} = imread('simpler/training/04.jpg');
-% I_training{4} = imread('simpler/training/05.jpg');
-% I_training{5} = imread('simpler/training/06.jpg');
-% I_training{6} = imread('simpler/training/07.jpg');
-% I_training{7} = imread('simpler/training/08.jpg');
-% I_training{8} = imread('simpler/training/09.jpg');
+I_training{2} = imread('simpler/training/03.jpg');
+I_training{3} = imread('simpler/training/04.jpg');
+I_training{4} = imread('simpler/training/05.jpg');
+I_training{5} = imread('simpler/training/06.jpg');
+I_training{6} = imread('simpler/training/07.jpg');
+I_training{7} = imread('simpler/training/08.jpg');
+I_training{8} = imread('simpler/training/09.jpg');
 % I_training{9} = imread('simpler/training/10.jpg');
 
 % interface begins here
@@ -30,7 +30,7 @@ lacm = input('what action? n= new model, s= segment a preloaded image, l= load m
 if lacm == 's'
     % segment a preloaded image: I_collection{1}
 
-    [final_images, class_images, seg_boxes] = image_segmentation(I_collection{1}, I_collection{1}, 6, 2, true);
+    [final_images, class_images, seg_boxes] = image_segmentation(I_collection{1}, I_training{1}, 6, 2, true);
 
     for i=1:size(final_images, 2)
         figure(20 + i)
@@ -99,20 +99,53 @@ elseif lacm == 'l'
         pred_im = imread(im_file);
         
         % segment the objects from the image
-        [final_images, class_images] = image_segmentation(pred_im, pred_im, 6, 2);
+        [final_images, class_images, seg_boxes] = image_segmentation(pred_im, pred_im, 6, 2, true);
 
         obj_vectors = [];
         obj_images = {};
         
         % itterate over each segmented object
         for i=1:size(final_images, 2)
+            
+            figure(20 + i)
+            imagesc(final_images{i})
+            input('process image?');
+            
             % get the feature vector for this object
-            [obj_vectors(size(obj_vectors, 1) + 1, :), feature_image, obj_images{size(obj_images, 2) + 1}] = get_object_feature_vector(final_images{i}, i * 101);
-            figure()
-            imagesc(feature_image)
+            [obj_vectors(size(obj_vectors, 1) + 1, :), feature_image, obj_images{size(obj_images, 2) + 1}] = get_object_feature_vector(final_images{i}, i * 101, true);
+%             figure()
+%             imagesc(feature_image)
         end
         
-        pred_class = nb_model.predict(obj_vectors)
+        pred_class = nb_model.predict(obj_vectors);
+        
+        pred_im_with_outcome = pred_im;
+        
+        for i=1:size(final_images, 2)
+        
+%             if isnan(pred_class(i, 1)) == false && pred_class(i, 1) > 0
+                
+                b_size = 2;
+                pred_im_with_outcome(seg_boxes{i}(1):seg_boxes{i}(2), seg_boxes{i}(3), 1) = 255;
+                pred_im_with_outcome(seg_boxes{i}(1):seg_boxes{i}(2), seg_boxes{i}(4), 1) = 255;
+                pred_im_with_outcome(seg_boxes{i}(1), seg_boxes{i}(3):seg_boxes{i}(4), 1) = 255;
+                pred_im_with_outcome(seg_boxes{i}(2), seg_boxes{i}(3):seg_boxes{i}(4), 1) = 255;
+                
+%             end
+            
+        end
+        
+        figure()
+        imagesc(pred_im_with_outcome)
+        
+        for i=1:size(final_images, 2)
+        
+%             if isnan(pred_class(i, 1)) == false && pred_class(i, 1) > 0
+            
+                text(seg_boxes{i}(3), seg_boxes{i}(1), num2class_type(pred_class(i, 1)));
+                
+%             end
+        end
         
     end
     
