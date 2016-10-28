@@ -122,10 +122,10 @@ function [final_images, final_class_images, final_class_boxes] = image_segmentat
         
         if break_points
             b_size = 3;
-            Ig_bounded_boxes(b_left:b_right, (b_top - b_size):(b_top + b_size)) = Ig_bounded_boxes(b_left:b_right, (b_top - b_size):(b_top + b_size)) + 20;
-            Ig_bounded_boxes(b_left:b_right, (b_bottom - b_size):(b_bottom + b_size)) = Ig_bounded_boxes(b_left:b_right, (b_bottom - b_size):(b_bottom + b_size)) + 20;
-            Ig_bounded_boxes((b_left - b_size):(b_left + b_size), b_top:b_bottom) = Ig_bounded_boxes((b_left - b_size):(b_left + b_size), b_top:b_bottom) + 20;
-            Ig_bounded_boxes((b_right - b_size):(b_right + b_size), b_top:b_bottom) = Ig_bounded_boxes((b_right - b_size):(b_right + b_size), b_top:b_bottom) + 20;
+            Ig_bounded_boxes(b_left:b_right, b_top) = Ig_bounded_boxes(b_left:b_right, b_top) + 20;
+            Ig_bounded_boxes(b_left:b_right, b_bottom) = Ig_bounded_boxes(b_left:b_right, b_bottom) + 20;
+            Ig_bounded_boxes(b_left, b_top:b_bottom) = Ig_bounded_boxes(b_left, b_top:b_bottom) + 20;
+            Ig_bounded_boxes(b_right, b_top:b_bottom) = Ig_bounded_boxes(b_right, b_top:b_bottom) + 20;
             
             Ig_classes_bounded_boxes(b_left:b_right, (b_top - b_size):(b_top + b_size), 1) = 255;
             Ig_classes_bounded_boxes(b_left:b_right, (b_bottom - b_size):(b_bottom + b_size), 1) = 255;

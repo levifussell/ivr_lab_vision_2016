@@ -112,7 +112,7 @@ elseif lacm == 'l'
             input('process image?');
             
             % get the feature vector for this object
-            [obj_vectors(size(obj_vectors, 1) + 1, :), feature_image, obj_images{size(obj_images, 2) + 1}] = get_object_feature_vector(final_images{i}, i * 101, true);
+            [obj_vectors(size(obj_vectors, 1) + 1, :), feature_image, obj_images{size(obj_images, 2) + 1}] = get_object_feature_vector(final_images{i}, final_images{i}, i * 101, true);
 %             figure()
 %             imagesc(feature_image)
         end

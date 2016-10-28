@@ -15,7 +15,7 @@ function [num_clusters, assigned_cl] = linkclustering(m_data)
     num_clusters = 1;
 
     % maximum allowed number of itterations before clustering fails
-    itterations = 100000;
+    itterations = 10000000;
 
     while itterations > 0
 
