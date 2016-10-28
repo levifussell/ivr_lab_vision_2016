@@ -55,7 +55,7 @@ function [nb_model, model_train_vecs, con_m, accuracy ] = train_new_model(I_coll
     data_m = [obj_vectors, obj_classes];
 
     % % divide data into train/test
-    [data_train, data_test] = create_train_test_data(data_m, 10, 0.75);
+    [data_train, data_test] = create_train_test_data(data_m, 10, 0.9);
 
     % train a Naive Bayes classifier on the data
     nb_model = fitNaiveBayes(data_train(:, 1:(size(data_train, 2) - 1)), data_train(:, size(data_train, 2)));
