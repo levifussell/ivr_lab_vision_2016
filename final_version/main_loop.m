@@ -4,37 +4,47 @@
 % get training data from file
 I_collection = {};
 I_collection{1} = imread('simpler/02.jpg');
-I_collection{2} = imread('simpler/03.jpg');
-I_collection{3} = imread('simpler/04.jpg');
-I_collection{4} = imread('simpler/05.jpg');
-I_collection{5} = imread('simpler/06.jpg');
-I_collection{6} = imread('simpler/07.jpg');
-I_collection{7} = imread('simpler/08.jpg');
-I_collection{8} = imread('simpler/09.jpg');
+% I_collection{2} = imread('simpler/03.jpg');
+% I_collection{3} = imread('simpler/04.jpg');
+% I_collection{4} = imread('simpler/05.jpg');
+% I_collection{5} = imread('simpler/06.jpg');
+% I_collection{6} = imread('simpler/07.jpg');
+% I_collection{7} = imread('simpler/08.jpg');
+% I_collection{8} = imread('simpler/09.jpg');
 % I_collection{9} = imread('simpler/10.jpg');
 
 I_training = {};
 I_training{1} = imread('simpler/training/02.jpg');
-I_training{2} = imread('simpler/training/03.jpg');
-I_training{3} = imread('simpler/training/04.jpg');
-I_training{4} = imread('simpler/training/05.jpg');
-I_training{5} = imread('simpler/training/06.jpg');
-I_training{6} = imread('simpler/training/07.jpg');
-I_training{7} = imread('simpler/training/08.jpg');
-I_training{8} = imread('simpler/training/09.jpg');
+% I_training{2} = imread('simpler/training/03.jpg');
+% I_training{3} = imread('simpler/training/04.jpg');
+% I_training{4} = imread('simpler/training/05.jpg');
+% I_training{5} = imread('simpler/training/06.jpg');
+% I_training{6} = imread('simpler/training/07.jpg');
+% I_training{7} = imread('simpler/training/08.jpg');
+% I_training{8} = imread('simpler/training/09.jpg');
 % I_training{9} = imread('simpler/training/10.jpg');
 
 % interface begins here
+lacm = input('what action? n= new model, s= segment a preloaded image, l= load model', 's');
 
-lacm = input('load a current model? Y/N\n\n   ', 's');
-if lacm == 'y' || lacm == 'Y'
-    new_model = false;
-else
-    new_model = true;
-end
+if lacm == 's'
+    % segment a preloaded image: I_collection{1}
 
-% build a new model
-if new_model
+    [final_images, class_images, seg_boxes] = image_segmentation(I_collection{1}, I_collection{1}, 6, 2, true);
+
+    for i=1:size(final_images, 2)
+        figure(20 + i)
+        imagesc(final_images{i})
+        input('process image?');
+
+        [feature_vec, feature_image, full_image_chunk] = get_object_feature_vector(final_images{i}, final_images{i}, i, true);
+    end
+
+    input('created segmented images. continue?');
+
+
+elseif lacm == 'n'
+    % build a new model
 
     % series of inputs from user
     ss = input('show image segments? Y/N\n\n   ', 's');
@@ -64,7 +74,9 @@ if new_model
     delim = ',';
 
     dlmwrite(file_name, file_data, delim);
-else
+
+elseif lacm == 'l'
+
     % load a current model
     old_model_file = input('type the filename of your model: \n\n   ', 's');
     old_model_file = strcat([old_model_file, '.csv']);

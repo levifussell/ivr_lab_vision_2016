@@ -1,7 +1,11 @@
-function [image_processed, total_image_reduction] = apply_conv_pool_sequence(image_in, sequence)
+function [image_processed, total_image_reduction] = apply_conv_pool_sequence(image_in, sequence, break_points)
 % this function is a quick setup for easy experimenting with multiple
 % layers of max_pooling and Gaussian blurring. For now the Gaussian is a
 % set filter; this has been fine during testing.
+
+    if(nargin < 3)
+        break_points = false;
+    end
 
     image_processed = image_in;
 
@@ -29,6 +33,14 @@ function [image_processed, total_image_reduction] = apply_conv_pool_sequence(ima
             % update the total image reduction from max-pooling
             total_image_reduction = total_image_reduction * pool_v;
         end
+
+        if break_points
+            figure(5 + i)
+            colormap(gray)
+            imagesc(image_processed)
+            input('apply filter layer. continue?')
+        end
+
     end
 
 end

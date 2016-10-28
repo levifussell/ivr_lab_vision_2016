@@ -1,7 +1,11 @@
-function [final_images, final_class_images] = image_segmentation(image_m, class_image, pool1, pool2)
+function [final_images, final_class_images, final_class_boxes] = image_segmentation(image_m, class_image, pool1, pool2, break_points)
 % given an image, a training class image and 2 max-pooling values, perform
 % image segmentation via blob-analysis and attempt to remove blobs as
 % individual minimum-bounding boxes
+
+    if nargin < 5
+        break_points = false
+    end
 
     I = image_m;
 
@@ -19,7 +23,7 @@ function [final_images, final_class_images] = image_segmentation(image_m, class_
     b_im = int64(norm_im(:, :, 3) .* 255);
 
     % perform edge detection on each R, G, and B matrix
-    edge_r = edge_detection(r_im, gausswin(5, 2));
+    edge_r = edge_detection(r_im, gausswin(5, 2), break_points);
     % remove the background by finding the most common colour
     edge_r_back = mode(reshape(edge_r, 1, size(edge_r, 1) * size(edge_r, 2)));
     edge_r_back_remove = edge_r ~= edge_r_back;
@@ -32,25 +36,79 @@ function [final_images, final_class_images] = image_segmentation(image_m, class_
     edge_b_back = mode(reshape(edge_b, 1, size(edge_b, 1) * size(edge_b, 2)));
     edge_b_back_remove = edge_b ~= edge_b_back;
 
+    if break_points
+        figure(1)
+        colormap(gray)
+        imagesc(edge_r)
+        figure(2)
+        colormap(gray)
+        imagesc(edge_g)
+        figure(3)
+        colormap(gray)
+        imagesc(edge_b)
+        input('displaying thresholded R, G, B matrices. continue?');
+
+        figure(1)
+        colormap(gray)
+        imagesc(edge_r_back_remove)
+        figure(2)
+        colormap(gray)
+        imagesc(edge_g_back_remove)
+        figure(3)
+        colormap(gray)
+        imagesc(edge_b_back_remove)
+        input('displaying binary R, G, B matrices w/ background removed. continue?');
+    end
+
+
     % perform binary OR on R, G, and B to get a full edge image              
     Ig_edged = ceil((edge_r_back_remove + edge_g_back_remove + edge_b_back_remove) ./ 3);
+
+    if break_points
+        figure(4)
+        colormap(gray)
+        imagesc(Ig_edged)
+        input('overlay R, G, and B matrices. continue?')
+    end
 
     % perform a sequence of max-pooling and guassian convolution filters
     conv_pool_filter= [0, 0; 
                         1, pool1;
                        1, pool2];
 
-    [filtered_I, total_image_reduction] = apply_conv_pool_sequence(Ig_edged, conv_pool_filter);
+    [filtered_I, total_image_reduction] = apply_conv_pool_sequence(Ig_edged, conv_pool_filter, break_points);
 
     % cluster the blobs using linkclustering
     [num_clusters, clustered] = linkclustering(filtered_I);
+
+    if break_points
+        figure(10)
+        imagesc(clustered)
+        input('clustered blobs via link clustering. continue?');
+    end
+
 
     % scale the image back to the original size (scaled due to convolutions
     % and max-pooling)
     [scaled_filtered_I, Ig] = scale_image(clustered, Ig);
 
+    if break_points
+        figure(11)
+        imagesc(scaled_filtered_I)
+        input('scale image to original size. continue?');
+
+        figure(12)
+        colormap(gray)
+        imagesc(Ig + scaled_filtered_I * 10)
+        input('comparison of clusters to original image. continue?');
+    end
+
+
     final_images = {};
     final_class_images = {};
+    final_class_boxes = {};
+
+    Ig_bounded_boxes = Ig;
 
     % itterate through each cluster
     for i=1:(num_clusters - 1)
@@ -61,11 +119,27 @@ function [final_images, final_class_images] = image_segmentation(image_m, class_
         [im_bounded, b_left, b_right, b_top, b_bottom] = minimum_bounding_box(im_cluster);
         % im_bounded = minimum_bounding_box(im_cluster);
         
+        b_size = 3;
+        Ig_bounded_boxes(b_left:b_right, (b_top - b_size):(b_top + b_size)) += 20;
+        Ig_bounded_boxes(b_left:b_right, (b_bottom - b_size):(b_bottom + b_size)) += 20;
+        Ig_bounded_boxes((b_left - b_size):(b_left + b_size), b_top:b_bottom) += 20;
+        Ig_bounded_boxes((b_right - b_size):(b_right + b_size), b_top:b_bottom) += 20;
+
+        final_class_boxes{i} = [b_left, b_right, b_top, b_bottom];
+
         % take the bounding box from the original image
         final_images{i} = Id(b_left:b_right, b_top:b_bottom, :);
         
         % take the bounding box from the training image
         final_class_images{i} = class_image(b_left:b_right, b_top:b_bottom, :);
+    end
+
+    if break_points
+        figure(13)
+        colormap(gray)
+        imagesc(Ig_bounded_boxes)
+        text(10, 10, 'hello')
+        input('create minimum bounding boxes. continue?');
     end
 
 end
